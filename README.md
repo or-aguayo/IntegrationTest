@@ -20,6 +20,7 @@ En las pruebas **Bottom-Up**, comenzamos probando primero los **módulos inferio
 it('Debería permitir guardar la tarea en el almacenamiento local', ...)
 it('Debería permitir la sincronización de tareas con la nube', ...)
 it('Debería permitir la interacción con la UI después de sincronizar las tareas', ...)
+```
 
 ### 2. **Top-Down Integration Tests**
 En las pruebas **Top-Down**, comenzamos desde los **módulos superiores**, como la UI, y luego probamos cómo interactúan con los **módulos inferiores** (almacenamiento local y sincronización).
@@ -37,7 +38,7 @@ En las pruebas **Top-Down**, comenzamos desde los **módulos superiores**, como 
 it('Debería permitir agregar una tarea desde la UI (simulación de capa superior)', ...)
 it('Debería permitir la sincronización de la tarea con el módulo de almacenamiento local', ...)
 it('Debería sincronizar las tareas con la nube y enviar notificaciones', ...)
-
+```
 ### 3. **Sandwich Integration Tests**
 El enfoque **Sandwich** combina los enfoques **Bottom-Up** y **Top-Down**. Se prueban simultáneamente los **módulos superiores** (como la UI) y los **módulos inferiores** (como el almacenamiento local y la sincronización).
 
@@ -54,7 +55,7 @@ El enfoque **Sandwich** combina los enfoques **Bottom-Up** y **Top-Down**. Se pr
 it('Debería permitir la sincronización de la tarea con el almacenamiento local y la nube', ...)
 it('Debería integrar la UI para mostrar las tareas sincronizadas', ...)
 it('Debería enviar una notificación después de la sincronización', ...)
-
+```
 ### 4. **Big-Bang Integration Tests**
 En las pruebas **Big-Bang**, todos los módulos se integran y se prueban juntos al mismo tiempo sin hacer pruebas incrementales previas.
 
@@ -67,7 +68,7 @@ En las pruebas **Big-Bang**, todos los módulos se integran y se prueban juntos 
 #### **Código Ejemplo:**
 ```javascript
 it('Debería crear una nueva tarea, sincronizarla y enviar una notificación en un solo paso', ...)
-
+```
 ### ¿Cómo sabemos que son pruebas de integración?
 
 - **Múltiples módulos interactuando**: En cada una de estas pruebas se están probando múltiples módulos del sistema (almacenamiento local, sincronización, UI, notificaciones) y cómo interactúan entre sí.
