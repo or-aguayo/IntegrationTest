@@ -1,22 +1,23 @@
-require('dotenv').config();
-const express = require('express');
-const taskRoutes = require('./routes/taskRoutes');
+// Reemplazar require con import
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express from 'express';
+import taskRoutes from './routes/taskRoutes.js';
 
 const app = express();
-
-// Middleware para parsear JSON
 app.use(express.json());
-
-// Rutas
 app.use('/tasks', taskRoutes);
 
-// Middleware para manejar errores
-app.use((err, req, res, next) => {
-    res.status(500).json({ message: err.message });
+app.use(express.static('public')); // Sirviendo archivos estáticos
+app.use('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html')); // Sirve el archivo principal (si usas uno)
 });
 
-// Iniciar servidor
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+
