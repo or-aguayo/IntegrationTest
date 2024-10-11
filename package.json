@@ -21,6 +21,7 @@
     "dotenv": "^16.4.5",
     "eslint": "^9.11.0",
     "mocha": "^10.7.3",
+    "selenium-webdriver": "^4.25.0",
     "supertest": "^7.0.0"
   }
 }

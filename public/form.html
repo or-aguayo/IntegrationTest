@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Tarea</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Formulario de Tarea</h1>
+
+    <form id="task-form">
+        <label for="task-title">Título de la Tarea:</label>
+        <input type="text" id="task-title" name="title" required>
+
+        <label for="task-desc">Descripción:</label>
+        <textarea id="task-desc" name="description" required></textarea>
+
+        <label for="task-date">Fecha Límite:</label>
+        <input type="date" id="task-date" name="due_date" required>
+
+        <button type="submit" id="submit-task-btn">Guardar Tarea</button>
+    </form>
+
+    <script>
+    // Detectar si estamos en modo edición
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskIndex = urlParams.get('index');
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        // Si hay un índice en la URL, cargar los datos de la tarea existente para editar
+        if (taskIndex !== null) {
+            const task = tasks[taskIndex];
+            document.getElementById('task-title').value = task.title;
+            document.getElementById('task-desc').value = task.description;
+            document.getElementById('task-date').value = task.dueDate;
+        }
+
+        // Guardar o actualizar la tarea
+        document.getElementById('task-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const title = document.getElementById('task-title').value;
+            const description = document.getElementById('task-desc').value;
+            const dueDate = document.getElementById('task-date').value;
+
+            if (taskIndex !== null) {
+                // Actualizar la tarea existente
+                tasks[taskIndex] = { title, description, dueDate };
+            } else {
+                // Crear una nueva tarea
+                tasks.push({ title, description, dueDate });
+            }
+
+            // Guardar las tareas actualizadas en localStorage
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+
+            // Redirigir de vuelta a la lista de tareas
+            window.location.href = 'index.html';
+        });
+    });
+    </script>
+</body>
+</html>

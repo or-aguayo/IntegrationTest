@@ -1,89 +1,83 @@
-# Proyecto de Pruebas de Humo e Integración - Tareas API
+# Proyecto de Pruebas de Humo, Integración y de regresión - Tareas API
 
-Este proyecto implementa **pruebas de humo e integración** para una API de gestión de tareas. Las pruebas de humo permiten validar rápidamente la estabilidad del sistema y verificar las funciones críticas, mientras que las pruebas de integración verifican cómo interactúan los diferentes módulos del sistema.
+Este proyecto implementa **pruebas de humo, integración y regresión** para una API de gestión de tareas. Las pruebas de regresión aseguran que los cambios recientes no impacten negativamente el sistema.
 
-## Pruebas de humo
-Las pruebas de humo son un conjunto básico de pruebas automatizadas que verifican si las funciones críticas de la API están operativas. Son rápidas y superficiales, y su objetivo es confirmar que el sistema es lo suficientemente estable para realizar pruebas más exhaustivas.
+## Pruebas de regresión
+En este proyecto, se han implementado pruebas de regresión progresivas, enfocadas en validar el comportamiento de los módulos afectados por los cambios recientes. Las pruebas permiten identificar si las funcionalidades clave continúan funcionando correctamente después de realizar actualizaciones.
 
-### Implementación de Pruebas de Humo con Cypress
-Cypress se utilizó para automatizar las pruebas de humo en este proyecto. Las pruebas de humo se centran en los endpoints más importantes de la API *(/tasks)*, y verifican las operaciones básicas como la creación, obtención, actualización y eliminación de tareas.
+### Pruebas de regresión progresivas
 
+Este tipo de pruebas se realizan de manera continua y progresiva, conforme se agregan nuevas funcionalidades o correcciones de errores. Se verifican primero las partes más críticas del sistema, asegurando que los módulos afectados por los cambios se comporten correctamente sin ejecutar todas las pruebas.
+
+
+
+### Implementación de Pruebas de Regresión con Selenium
+Selenium se utilizó para automatizar las pruebas de regresión en la interfaz de usuario de la aplicación. Estas pruebas incluyen operaciones como la creación, edición y eliminación de tareas, validando que el sistema siga comportándose de manera adecuada después de las modificaciones.
 
 #### **Código Ejemplo:**
 ```javascript
-const baseUrl = 'http://localhost:3000';
+import { Builder, By, until } from 'selenium-webdriver';
+import { expect } from 'chai';
 
-describe('Pruebas de Humo para la API de Tareas', () => {
-    // Prueba para obtener las tareas almacenadas en el sistema
-    it('Debería mostrar las tareas almacenadas en el sistema', () => {
-        cy.request(`${baseUrl}/tasks`)
-            .then((response) => {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.be.an('array');
-                expect(response.body.length).to.be.greaterThan(0);
-            });
+describe('Pruebas de Regresión con Selenium - Gestión de Tareas', function() {
+    let driver;
+
+    // Configuración inicial
+    before(async () => {
+        driver = await new Builder().forBrowser('chrome').build();
     });
 
-    // Prueba para crear una nueva tarea
-    it('Debería permitir la creación de una nueva tarea', () => {
-        cy.request('POST', `${baseUrl}/tasks`, {
-            title: 'Tarea de Prueba',
-            description: 'Descripción de la tarea de prueba',
-            due_date: '2024-12-31'
-        }).then((response) => {
-            expect(response.status).to.eq(201);
-            expect(response.body).to.have.property('id');
-            expect(response.body.title).to.eq('Tarea de Prueba');
-        });
+    // Cerrar el navegador después de las pruebas
+    after(async () => {
+        await driver.quit();
     });
 
-    // Prueba para obtener una tarea por ID
-    it('Debería permitir obtener una tarea por su ID', () => {
-        cy.request(`${baseUrl}/tasks`)
-            .then((response) => {
-                const taskId = response.body[0].id;
-                cy.request(`${baseUrl}/tasks/${taskId}`)
-                    .then((response) => {
-                        expect(response.status).to.eq(200);
-                        expect(response.body).to.have.property('id', taskId);
-                    });
-            });
+    // Prueba de creación de tarea
+    it('Debería permitir la creación de una tarea desde la UI', async () => {
+        await driver.get('http://localhost:3000');
+        await driver.wait(until.elementLocated(By.id('add-task-btn')), 15000);
+        await driver.findElement(By.id('add-task-btn')).click();
+        await driver.findElement(By.id('task-title')).sendKeys('Tarea de Regresión Selenium');
+        await driver.findElement(By.id('task-desc')).sendKeys('Descripción de la tarea para prueba de regresión');
+        await driver.findElement(By.id('task-date')).sendKeys('2023-12-31');
+        await driver.findElement(By.id('submit-task-btn')).click();
+        await driver.get('http://localhost:3000');
+        const taskElement = await driver.wait(until.elementLocated(By.xpath("//li[contains(text(), 'Tarea de Regresión Selenium')]")), 10000);
+        expect(await taskElement.getText()).to.include('Tarea de Regresión Selenium');
     });
 
-    // Prueba para actualizar una tarea existente
-    it('Debería permitir la actualización de una tarea existente', () => {
-        cy.request(`${baseUrl}/tasks`)
-            .then((response) => {
-                const taskId = response.body[0].id;
-                cy.request('PUT', `${baseUrl}/tasks/${taskId}`, {
-                    title: 'Tarea Actualizada',
-                    description: 'Descripción actualizada',
-                    due_date: '2024-12-31'
-                }).then((response) => {
-                    expect(response.status).to.eq(200);
-                    expect(response.body).to.have.property('title', 'Tarea Actualizada');
-                });
-            });
+    // Prueba de edición de tarea
+    it('Debería permitir la edición de una tarea', async () => {
+        await driver.get('http://localhost:3000');
+        const editButton = await driver.wait(until.elementLocated(By.xpath("//button[contains(@class, 'edit-task-btn')]")), 15000);
+        await editButton.click();
+        const titleField = await driver.findElement(By.id('task-title'));
+        await titleField.clear();
+        await titleField.sendKeys('Tarea Editada Selenium');
+        await driver.findElement(By.id('submit-task-btn')).click();
+        await driver.get('http://localhost:3000');
+        const updatedTask = await driver.wait(until.elementLocated(By.xpath("//li[contains(text(), 'Tarea Editada Selenium')]")), 15000);
+        expect(await updatedTask.getText()).to.include('Tarea Editada Selenium');
     });
 
-    // Prueba para eliminar una tarea
-    it('Debería permitir la eliminación de una tarea', () => {
-        cy.request(`${baseUrl}/tasks`)
-            .then((response) => {
-                const taskId = response.body[0].id;
-                cy.request('DELETE', `${baseUrl}/tasks/${taskId}`)
-                    .then((response) => {
-                        expect(response.status).to.eq(200);
-                        expect(response.body).to.have.property('message', 'Tarea eliminada');
-                    });
-            });
+    // Prueba de eliminación de tarea
+    it('Debería permitir la eliminación de una tarea', async () => {
+        await driver.get('http://localhost:3000');
+        const deleteButton = await driver.wait(until.elementLocated(By.xpath("//button[contains(@class, 'delete-task-btn')]")), 15000);
+        await deleteButton.click();
+        const taskList = await driver.findElements(By.css('.task-item'));
+        expect(taskList.length).to.be.equal(0);
     });
 });
 
+
 ```
 
-### Características de las pruebas de humo
-1- Alcance: Superficial. Verifican que los endpoints básicos de la API están operativos.
-2- Velocidad: Rápida. Su objetivo es identificar errores críticos rápidamente.
-3- Frecuencia de Ejecución: Al inicio de una nueva compilación o después de cambios significativos.
-4- Herramienta: Cypress permite realizar solicitudes HTTP a los endpoints de la API y validar las respuestas.
+### Características de las pruebas de regresión
+1- Objetivo: Asegurar que las funcionalidades previas continúan operativas después de realizar modificaciones.
+
+2- Cobertura: Dependiendo del tipo de regresión, puede variar desde pruebas parciales hasta la ejecución de todo el conjunto de pruebas.
+
+3- Frecuencia de Ejecución: Se ejecutan regularmente, después de cada cambio significativo o actualización en el sistema.
+
+4- Herramienta: Selenium se utiliza para automatizar las pruebas de la interfaz de usuario, garantizando que la interacción con la aplicación funcione correctamente después de los cambios.

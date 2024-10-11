@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tareas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Lista de Tareas</h1>
+    
+    <ul id="task-list">
+        <!-- Las tareas generadas dinámicamente irán aquí -->
+    </ul>
+
+    <button id="add-task-btn">Añadir Tarea</button>
+
+    <script>
+// Función para cargar las tareas desde localStorage
+function loadTasks() {
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const taskList = document.getElementById('task-list');
+    taskList.innerHTML = ''; // Limpia la lista antes de cargar tareas
+
+    tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.classList.add('task-item');
+        li.innerHTML = `
+            <span class="task-title">${task.title}</span>
+            <button class="edit-task-btn" data-index="${index}">Editar</button>
+            <button class="delete-task-btn">Eliminar</button>
+        `;
+        taskList.appendChild(li);
+
+        // Agregar evento de edición
+        li.querySelector('.edit-task-btn').addEventListener('click', (event) => {
+            const taskIndex = event.target.getAttribute('data-index');
+            window.location.href = `form.html?index=${taskIndex}`; // Pasa el índice de la tarea al formulario
+        });
+
+        // Agregar evento de eliminación
+        li.querySelector('.delete-task-btn').addEventListener('click', () => {
+            tasks.splice(index, 1); // Eliminar tarea
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            loadTasks(); // Recargar tareas
+        });
+    });
+}
+
+// Cargar tareas al inicio
+loadTasks();
+
+    </script>
+</body>
+</html>
