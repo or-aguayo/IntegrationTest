@@ -1,0 +1,57 @@
+name: Smoke tests
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      # (Opcional) Si tu SUT necesita base de datos en contenedor:
+      # - name: Start DB (Postgres ejemplo)
+      #   uses: docker/setup-buildx-action@v3
+      # - run: |
+      #     docker run -d --name pg -p 5432:5432 -e POSTGRES_PASSWORD=pass postgres:16
+      #     # espera healthcheck si lo necesitas
+
+      # Cypress GitHub Action arranca el SUT, espera y ejecuta tests
+      - name: Run smoke tests
+        uses: cypress-io/github-action@v6
+        with:
+          # Comando que levanta TU app (ajústalo)
+          start: npm start
+          # URL que debe estar “viva” para empezar a testear (ajústala)
+          wait-on: 'http://localhost:3000'
+          # Sólo specs de humo
+          spec: cypress/e2e/smoke/**/*.cy.{js,ts}
+          # (Opcional) el navegador
+          browser: chrome
+        env:
+          # Puedes sobreescribir baseUrl sin tocar config
+          CYPRESS_baseUrl: http://localhost:3000
+
+      # Guarda evidencias si algo falla
+      - name: Save videos & screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-artifacts
+          path: |
+            cypress/videos/**
+            cypress/screenshots/**
